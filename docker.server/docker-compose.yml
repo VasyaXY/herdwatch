@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  php-fpm:
+    container_name: php-fpm
+    build:
+      context: ./../
+      dockerfile: ./docker.server/php-fpm/Dockerfile
+      args:
+        - PUID=${PUID}
+        - PGID=${PGID}
+        - INSTALL_XDEBUG=${INSTALL_XDEBUG}
+    environment:
+      PHP_IDE_CONFIG: "serverName=Docker"
+      DATABASE_URL: 'mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}?serverVersion=10.5'
+      API_SERVER: 'http://nginx:80'
+    networks:
+      - symfony
+    volumes:
+      - data:/var/www/
+#      - /var/www/vendor/
+#      - /var/www/var/
+#      - /var/www/bin/
+#      - ./../server/:/var/www/
+
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+    ports:
+      - ${NGINX_HOST_HTTP_PORT}:80
+    volumes:
+      - data:/var/www/
+#      - /var/www/vendor/
+#      - /var/www/var/
+#      - /var/www/bin/
+#      - ./../server/:/var/www/
+    depends_on:
+      - php-fpm
+      - db
+    networks:
+      - symfony
+
+  db:
+    container_name: mariadb
+    restart: always
+    build:
+      context: ./mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - symfony
+
+volumes:
+  data:
+networks:
+  symfony:

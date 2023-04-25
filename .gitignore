@@ -1,0 +1,13 @@
+/client/var/
+/client/vendor/
+
+/server/var/
+/server/vendor/
+
+/.idea
+/client/.idea
+/server/.idea
+/client/composer.lock
+/client/symfony.lock
+/server/composer.lock
+/server/symfony.lock
